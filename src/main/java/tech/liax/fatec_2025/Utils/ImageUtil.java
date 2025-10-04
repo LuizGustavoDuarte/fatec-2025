@@ -1,11 +1,9 @@
-package tech.liax.fatec_2025;
+package tech.liax.fatec_2025.Utils;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Base64;
 
 public class ImageUtil {
@@ -38,5 +36,12 @@ public class ImageUtil {
 
         byte[] imageBytes = byteArrayOutputStream.toByteArray();
         return new ByteArrayInputStream(imageBytes);
+    }
+
+    public static BufferedImage stampImage (BufferedImage image) throws IOException {
+        Graphics2D graphics = image.createGraphics();
+        graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+        graphics.drawImage(ImageIO.read(new File("src/main/java/tech/liax/fatec_2025/fatecLogo.png")),0,0, image.getWidth(), image.getHeight(), null);
+        return image;
     }
 }
