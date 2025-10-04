@@ -1,12 +1,14 @@
 package tech.liax.fatec_2025.Entities;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "TBL_IMAGE_PROCESS")
 @Getter @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class ProcessesImageEntity {
     @Id
     @Column(name = "PROCESS_ID")
