@@ -11,11 +11,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
     @Value("${spring.rabbitmq.queueName}")
-    public static final String QUEUE_NAME = "IMAGE-PROCESSING-QUEUE";
+    private String QUEUE_NAME;
+
     @Value("${spring.rabbitmq.exchangeName}")
-    public static final String EXCHANGE_NAME = "IMAGE-PROCESSING-EXCHANGE";
+    private String EXCHANGE_NAME;
+
     @Value("${spring.rabbitmq.routingKey}")
-    public static final String ROUTING_KEY = "process.image";
+    private String ROUTING_KEY;
 
     @Bean
     public Queue queue() {
@@ -31,4 +33,5 @@ public class RabbitMQConfig {
     public Binding binding() {
         return BindingBuilder.bind(queue()).to(exchange()).with(ROUTING_KEY);
     }
+
 }

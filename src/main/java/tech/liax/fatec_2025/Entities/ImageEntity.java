@@ -3,14 +3,12 @@ package tech.liax.fatec_2025.Entities;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
 @Table(name = "TBL_IMAGE")
 @Getter @Setter
-@RequiredArgsConstructor
 public class ImageEntity {
     @Id
     @Column(name = "IMAGE_ID", updatable = false, nullable = false)
@@ -20,6 +18,6 @@ public class ImageEntity {
     @Column(name = "IMAGE_PATH", length = 120)
     private String imagePath;
 
-    @OneToMany(mappedBy = "image", fetch = FetchType.EAGER)
-    private List<ProcessesImageEntity> processesImage = new ArrayList<>();
+    @OneToMany(mappedBy = "mainImage", fetch = FetchType.EAGER)
+    private List<ProcessesImageEntity> processesImage;
 }
