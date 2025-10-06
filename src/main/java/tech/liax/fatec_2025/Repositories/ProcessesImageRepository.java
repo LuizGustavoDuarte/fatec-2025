@@ -5,5 +5,4 @@ import org.springframework.stereotype.Repository;
 import tech.liax.fatec_2025.Entities.ProcessesImageEntity;
 
 @Repository
-public interface ProcessesImageRepository extends JpaRepository<ProcessesImageEntity, Long> {
-}
+public interface ProcessesImageRepository extends JpaRepository<ProcessesImageEntity, Long> { }

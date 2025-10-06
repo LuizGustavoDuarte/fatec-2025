@@ -1,8 +1,12 @@
 package tech.liax.fatec_2025.Services;
+
 import io.minio.*;
 import io.minio.errors.*;
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tech.liax.fatec_2025.Entities.ImageEntity;
@@ -10,18 +14,23 @@ import tech.liax.fatec_2025.Entities.ProcessesImageEntity;
 import tech.liax.fatec_2025.Repositories.ImageRepository;
 import tech.liax.fatec_2025.Repositories.ProcessesImageRepository;
 import tech.liax.fatec_2025.Utils.ImageUtil;
+import tech.liax.fatec_2025.Utils.ProcessCodeEnum;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
+
+import static tech.liax.fatec_2025.Utils.ConstantsUtil.*;
 
 @Service
 @RequiredArgsConstructor
 public class ImageUploaderService {
+    private final ImageRepository imageRepository;
+    private final ProcessesImageRepository processesImageRepository;
+    private static final Logger logger = LoggerFactory.getLogger(ImageUploaderService.class);
+    private MinioClient minioClient;
+
     @Value("${spring.minio.host}")
     private String minioHostUrl;
 
@@ -34,92 +43,93 @@ public class ImageUploaderService {
     @Value("${spring.minio.bucketName}")
     private String bucketName;
 
-    private final static String CONTENT_TYPE = "image/png";
-    private final static String IMAGE_FORMAT = ".png";
+    @PostConstruct
+    private void initMinioClient() {
+        try {
+            minioClient = MinioClient.builder()
+                    .endpoint(minioHostUrl)
+                    .credentials(accessKey, secretKey)
+                    .build();
 
-    private final ProcessesImageRepository processesImageRepository;
-    private final ImageRepository imageRepository;
-
-    private MinioClient getMinioClient() throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-        MinioClient minioClient =
-                MinioClient.builder()
-                        .endpoint(minioHostUrl)
-                        .credentials(accessKey, secretKey)
-                        .build();
-
-        boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
-
-        if(!found) {
-            minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+            if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())) {
+                minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+            }
+        } catch (Exception e) {
+            logger.error("Erro ao inicializar MinioClient: {}", e.getMessage(), e);
+            throw new RuntimeException("Falha ao conectar ao MinIO", e);
         }
-
-        return minioClient;
     }
 
     @Transactional
-    public UUID upload(BufferedImage image) throws IOException, NoSuchAlgorithmException, InvalidKeyException {
+    public ImageEntity saveImageData() {
         try {
-            MinioClient minioClient = getMinioClient();
-            ImageEntity newImage = imageRepository.save(new ImageEntity());
-            newImage.setImagePath(newImage.getImageId().toString() + IMAGE_FORMAT);
-            imageRepository.save(newImage);
+            ImageEntity newImageEntity = imageRepository.save(new ImageEntity());
+            newImageEntity.setImagePath(newImageEntity.getImageId().toString() + DEFAULT_IMAGE_EXTENSION);
+            imageRepository.save(newImageEntity);
+            return newImageEntity;
+        } catch (Exception e) {
+            logger.error("Erro ao salvar imagem no banco: {}", e.getMessage(), e);
+            throw new RuntimeException("Falha ao salvar imagem no banco", e);
+        }
+    }
 
+    public void upload(BufferedImage image, String imagePath) {
+        try {
             minioClient.putObject(
-                    PutObjectArgs
-                            .builder()
+                    PutObjectArgs.builder()
                             .bucket(bucketName)
-                            .object(newImage.getImagePath()).stream(ImageUtil.convertImageToInputStream(image), -1, 10485760)
-                            .contentType(CONTENT_TYPE)
+                            .object(imagePath)
+                            .stream(ImageUtil.convertImageToInputStream(image), DEFAULT_IMAGE_SIZE, DEFAULT_PART_SIZE)
+                            .contentType(DEFAULT_CONTENT_TYPE)
                             .build()
             );
-
-
-
-           return newImage.getImageId();
-        } catch (MinioException e) {
-            System.out.println("Error occurred: " + e);
-            System.out.println("HTTP trace: " + e.httpTrace());
+        } catch (Exception e) {
+            try {
+                minioClient.removeObject(
+                        RemoveObjectArgs.builder()
+                                .bucket(bucketName)
+                                .object(imagePath)
+                                .build()
+                );
+            } catch (Exception removeEx) {
+                logger.error("Erro ao remover imagem do bucket: {}", removeEx.getMessage(), removeEx);
+            }
+            logger.error("Erro ao fazer upload da imagem: {}", e.getMessage(), e);
+            throw new RuntimeException("Falha ao fazer upload da imagem", e);
         }
-
-        return null;
     }
 
     @Transactional
-    public void saveProcessResult(ImageEntity originalImage, BufferedImage image, String processCode) throws IOException, NoSuchAlgorithmException, InvalidKeyException {
-        UUID savedID = upload(image);
-        ProcessesImageEntity entityToSave = ProcessesImageEntity.builder().image(originalImage).processCode(processCode).resultPath(savedID.toString() + ".png").build();
-        processesImageRepository.save(entityToSave);
-    }
-
-    public BufferedImage getImageFile(UUID imageID) {
+    public void saveProcessResult(ImageEntity originalImageEntity, BufferedImage processedImage, ProcessCodeEnum processCode) {
         try {
-            MinioClient minioClient = getMinioClient();
-
-            GetObjectResponse response = minioClient.getObject(
-                    GetObjectArgs.builder().bucket(bucketName).object(imageID + IMAGE_FORMAT).build()
+            ImageEntity newImageEntity = saveImageData();
+            processesImageRepository.save(
+                    ProcessesImageEntity.builder()
+                            .mainImage(originalImageEntity)
+                            .processedImage(newImageEntity)
+                            .processCode(processCode)
+                            .build()
             );
-
-            return ImageIO.read(response);
-        } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
-            System.out.println("Error occurred: " + e);
+            upload(processedImage, newImageEntity.getImagePath());
+        } catch (Exception e) {
+            logger.error("Erro ao salvar resultado do processamento: {}", e.getMessage(), e);
+            throw new RuntimeException("Falha ao salvar resultado do processamento", e);
         }
-
-        return null;
     }
 
-    public BufferedImage getImageFile(String resultPath) {
-        try {
-            MinioClient minioClient = getMinioClient();
-
-            GetObjectResponse response = minioClient.getObject(
-                    GetObjectArgs.builder().bucket(bucketName).object(resultPath).build()
-            );
-
-            return ImageIO.read(response);
-        } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
-            System.out.println("Error occurred: " + e);
-        }
-
-        return null;
+    public Optional<BufferedImage> getImageFile(UUID imageID) {
+        return getImageFile(imageID + DEFAULT_IMAGE_EXTENSION);
     }
+
+    public Optional<BufferedImage> getImageFile(String resultPath) {
+        try (GetObjectResponse response = minioClient.getObject(
+                GetObjectArgs.builder().bucket(bucketName).object(resultPath).build())) {
+            BufferedImage image = ImageIO.read(response);
+            return Optional.ofNullable(image);
+        } catch (Exception e) {
+            logger.warn("Imagem não encontrada ou erro ao ler: {}", e.getMessage());
+            return Optional.empty();
+        }
+    }
+
 }

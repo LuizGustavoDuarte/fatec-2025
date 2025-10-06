@@ -35,9 +35,9 @@ export function LoginForm({
     try {
       const base64 = await encodeFileToBase64(data.image[0]);
       props.setFunction([...props.currentState, [base64]])
-      let response = await axios.post("http://localhost:8080/api/image/upload", { imageBase64: base64 })
+      let response = await axios.post("http://localhost:8080/api/image/upload/1", { imageBase64: base64 })
       let recursivePolling = async () => {
-        let processes = await axios.get("http://localhost:8080/api/image/get/" + response.data + "/processed");
+        let processes = await axios.get("http://localhost:8080/api/image/get/" + response.data + "/processes");
         console.log(processes)
         if(processes.data) {
           props.setFunction([...props.currentState, [base64, ...processes.data]])

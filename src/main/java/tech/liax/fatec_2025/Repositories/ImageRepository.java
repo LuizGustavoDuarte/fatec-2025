@@ -7,5 +7,4 @@ import tech.liax.fatec_2025.Entities.ImageEntity;
 import java.util.UUID;
 
 @Repository
-public interface ImageRepository extends JpaRepository<ImageEntity, UUID> {
-}
+public interface ImageRepository extends JpaRepository<ImageEntity, UUID> { }

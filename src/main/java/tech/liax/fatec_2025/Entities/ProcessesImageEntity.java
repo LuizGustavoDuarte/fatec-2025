@@ -2,12 +2,13 @@ package tech.liax.fatec_2025.Entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import tech.liax.fatec_2025.Utils.ProcessCodeEnum;
 
 @Entity
 @Table(name = "TBL_IMAGE_PROCESS")
 @Getter @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class ProcessesImageEntity {
     @Id
@@ -16,12 +17,14 @@ public class ProcessesImageEntity {
     private Long processId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "IMAGE_ID", nullable = false)
-    private ImageEntity image;
+    @JoinColumn(name = "MAIN_IMAGE_ID", nullable = false)
+    private ImageEntity mainImage;
 
-    @Column(name = "PROCESS_CODE", length = 30)
-    private String processCode;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "PROCESSED_IMAGE_ID", nullable = false)
+    private ImageEntity processedImage;
 
-    @Column(name = "RESULT_PATH", length = 120)
-    private String resultPath;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "PROCESS_CODE", nullable = false)
+    private ProcessCodeEnum processCode;
 }
