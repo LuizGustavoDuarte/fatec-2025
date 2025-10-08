@@ -5,7 +5,7 @@ public class ConstantsUtil {
     public static final String EMPTY_VALUE = "";
     public static final String DEFAULT_IMAGE_FORMAT = "PNG";
     public static final Float DEFAULT_ALPHA_VALUE = 0.5f;
-    public static final String DEFAULT_IMAGES_PATH = "src/main/resources/images/";
+    public static final String DEFAULT_IMAGES_PATH = "images/";
     public static final String FATEC_LOGO_PATHNAME = "fatecLogo.png";
     public static final String LIAX_LOGO_PATHNAME = "liaxLogo.png";
     public static final int ZERO_VALUE = 0;

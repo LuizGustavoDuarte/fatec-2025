@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.Base64;
+import java.util.Objects;
 
 import static tech.liax.fatec_2025.Utils.ConstantsUtil.*;
 
@@ -76,7 +77,7 @@ public class ImageUtil {
         try {
             Graphics2D graphics = image.createGraphics();
             graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, DEFAULT_ALPHA_VALUE));
-            BufferedImage logo = ImageIO.read(new File(DEFAULT_IMAGES_PATH + pathName));
+            BufferedImage logo = ImageIO.read(Objects.requireNonNull(ImageUtil.class.getClassLoader().getResourceAsStream(DEFAULT_IMAGES_PATH + pathName)));
             if (logo == null) throw new ImageProcessingException("Logo não encontrada: " + pathName);
             graphics.drawImage(logo, ZERO_VALUE, ZERO_VALUE, image.getWidth(), image.getHeight(), null);
             graphics.dispose();
