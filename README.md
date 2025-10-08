@@ -82,19 +82,30 @@ Backend (Windows PowerShell):
 1. Configure as variáveis de ambiente necessárias (exemplo mínimo usando MinIO local, RabbitMQ local e PostgreSQL):
 
 ```powershell
-$env:SPRING_MINIO_HOST = ""
-$env:SPRING_MINIO_ACCESSKEY = ""
-$env:SPRING_MINIO_SECRETKEY = ""
-$env:SPRING_MINIO_BUCKETNAME = ""
-$env:SPRING_RABBITMQ_QUEUE_NAME = ""
-$env:SPRING_RABBITMQ_EXCHANGE_NAME = ""
-$env:SPRING_RABBITMQ_ROUTING_KEY = ""
-$env:SPRING_CORS_ALLOWED_ORIGINS = ""
+$env:POSTGRES_HOST =
+$env:POSTGRES_DB =
+$env:POSTGRES_USER =
+$env:POSTGRES_PASSWORD =
+$env:SPRING_JPA_HIBERNATE_DDL_AUTO =
 
-$env:SPRING_DATASOURCE_URL = ""
-$env:SPRING_DATASOURCE_USERNAME = ""
-$env:SPRING_DATASOURCE_PASSWORD = ""
-$env:SPRING_JPA_HIBERNATE_DDL_AUTO = ""
+$env:RABBITMQ_HOST =
+$env:RABBITMQ_PORT =
+$env:RABBITMQ_DEFAULT_USER =
+$env:RABBITMQ_DEFAULT_PASS =
+$env:IMAGE_PROCESSING_QUEUE =
+$env:RABBITMQ_EXCHANGE_NAME =
+$env:RABBITMQ_ROUTING_KEY =
+
+$env:MINIO_HOST =
+$env:MINIO_ROOT_USER =
+$env:MINIO_ROOT_PASSWORD =
+$env:MINIO_BUCKET_NAME =
+
+$env:CORS_ALLOWED_ORIGINS =
+$env:NEXT_PUBLIC_API_URL =
+$env:HIBERNATE_DDL_AUTO =
+$env:HIBERNATE_SHOW_SQL =
+$env:HIBERNATE_FORMAT_SQL =
 ```
 
 2. Rodar com Maven (usando wrapper incluso):
@@ -138,5 +149,6 @@ O frontend estará disponível em `http://localhost:3000` por padrão.
 - `src/main/java` — backend Java/Spring Boot
 - `src/main/resources` — recursos do backend (imagens, application.properties se criado)
 - `fatec-front/` — frontend Next.js
+
 
 ---
