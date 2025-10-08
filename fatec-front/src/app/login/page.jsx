@@ -14,7 +14,7 @@ export default function LoginPage() {
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
           <a href="#" className="flex items-center gap-2 font-medium">
-            <Image src={LiaxLogo} width={128} />
+            <Image src={LiaxLogo} width={128} alt="Liax Logo" />
           </a>
         </div>
         <div className="flex flex-1 items-center justify-center">
@@ -29,9 +29,9 @@ export default function LoginPage() {
         </div>
         <div className=" p-10 h-full  border-gray-950">
           {
-            processedFiles.map(processedImages => (
-            <div className="grid grid-cols-4 gap-5 mt-5">
-              {processedImages.map( image => (<div className="mx-auto"><ImageZoom><Image width={600} height={100} className="rounded-[10px] border-blue-700 border-2" src={"data:image/png;base64," + image} /></ImageZoom></div>))}
+            processedFiles.map((processedImages, key) => (
+            <div className="grid grid-cols-4 gap-5 mt-5" key={key}>
+              {processedImages.map((image, key) => (<div className="mx-auto" key={key}><ImageZoom><Image width={600} height={100} className="rounded-[10px] border-blue-700 border-2" src={"data:image/png;base64," + image} alt="Imagem enviada" /></ImageZoom></div>))}
             </div>))
           }
         </div>
