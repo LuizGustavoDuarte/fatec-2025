@@ -1,6 +1,6 @@
-'use client';;
-import Zoom from 'react-medium-image-zoom';
-import { cn } from '@/lib/utils';
+'use client'
+import { cn } from '@/lib/utils'
+import Zoom from 'react-medium-image-zoom'
 
 export const ImageZoom = ({
   className,
@@ -36,4 +36,4 @@ export const ImageZoom = ({
       )}
       {...props} />
   </div>
-);
+)
