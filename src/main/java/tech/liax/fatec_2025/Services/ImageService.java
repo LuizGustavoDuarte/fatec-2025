@@ -8,7 +8,6 @@ import tech.liax.fatec_2025.Entities.ImageEntity;
 import tech.liax.fatec_2025.Entities.ProcessesImageEntity;
 import tech.liax.fatec_2025.Exceptions.ImageNotFoundException;
 import tech.liax.fatec_2025.Repositories.ImageRepository;
-import tech.liax.fatec_2025.Utils.ProcessCodeEnum;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -23,12 +22,11 @@ public class ImageService {
     private final MessageSenderService messageSenderService;
     private static final Logger logger = LoggerFactory.getLogger(ImageService.class);
 
-    public String upload(BufferedImage image, ProcessCodeEnum processCode) {
-        ImageEntity imageEntity = imageUploaderService.saveImageData();
+    public String upload(BufferedImage image) {
+        ImageEntity imageEntity = imageUploaderService.saveNewImageData();
         imageUploaderService.upload(image, imageEntity.getImagePath());
         String imageID = imageEntity.getImageId().toString();
-        String message = imageID + "," + processCode;
-        messageSenderService.sendMessage(message);
+        messageSenderService.sendMessage(imageID);
         return imageID;
     }
 

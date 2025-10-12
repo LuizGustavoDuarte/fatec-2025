@@ -7,8 +7,9 @@ import tech.liax.fatec_2025.Exceptions.InvalidProcessCodeException;
 @Getter
 @AllArgsConstructor
 public enum ProcessCodeEnum {
-    FATEC_STAMP(1),
-    LIAX_STAMP(2),
+    STAMP(1),
+    CARTOONIZE(2),
+    BLUR(3),
     OTHER(3);
 
     private final int code;

@@ -5,13 +5,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
+import tech.liax.fatec_2025.DTOs.ImageProcessedDTO;
 import tech.liax.fatec_2025.Entities.ImageEntity;
 import tech.liax.fatec_2025.Exceptions.ImageNotFoundException;
 import tech.liax.fatec_2025.Utils.ImageUtil;
-import tech.liax.fatec_2025.Utils.ProcessCodeEnum;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -26,12 +26,11 @@ public class ConsumerService {
         try {
             String[] messageParts = message.split(",");
             UUID imageID = UUID.fromString(messageParts[0]);
-            ProcessCodeEnum processCode = ProcessCodeEnum.valueOf(messageParts[1]);
             ImageEntity originalImageEntity = imageService.getImage(imageID);
             BufferedImage imageToProcess = imageService.getImageFile(imageID);
-            BufferedImage processedImage = ImageUtil.processImage(imageToProcess, processCode);
+            List<ImageProcessedDTO> processedImages = ImageUtil.processImage(imageToProcess);
 
-            imageUploaderService.saveProcessResult(originalImageEntity, processedImage, processCode);
+            imageUploaderService.saveProcessResult(originalImageEntity, processedImages);
             logger.info("Processamento concluído para imagem: {}", imageID);
         } catch (ImageNotFoundException e) {
             logger.warn("Imagem não encontrada: {}", e.getMessage());
