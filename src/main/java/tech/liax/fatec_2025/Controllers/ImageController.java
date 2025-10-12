@@ -9,7 +9,6 @@ import tech.liax.fatec_2025.DTOs.ImageUploadDTO;
 import tech.liax.fatec_2025.Entities.ProcessesImageEntity;
 import tech.liax.fatec_2025.Utils.ImageUtil;
 import tech.liax.fatec_2025.Services.ImageService;
-import tech.liax.fatec_2025.Utils.ProcessCodeEnum;
 
 import java.awt.image.BufferedImage;
 import java.util.List;
@@ -22,15 +21,12 @@ public class ImageController {
     private final ImageService imageService;
     private static final Logger logger = LoggerFactory.getLogger(ImageController.class);
 
-    @PostMapping(value = "/upload/{processCode}")
-    public ResponseEntity<String> uploadImage(@PathVariable int processCode, @RequestBody ImageUploadDTO request) {
+    @PostMapping(value = "/upload")
+    public ResponseEntity<String> uploadImage(@RequestBody ImageUploadDTO request) {
         try {
             BufferedImage image = ImageUtil.decodeBase64ToImage(request.imageBase64());
-            String imageID = imageService.upload(image, ProcessCodeEnum.fromCode(processCode));
+            String imageID = imageService.upload(image);
             return ResponseEntity.ok(imageID);
-        } catch (IllegalArgumentException e) {
-            logger.warn("Process code inválido: {}", processCode, e);
-            return ResponseEntity.badRequest().body("Código de processo inválido.");
         } catch (Exception e) {
             logger.error("Erro ao fazer upload da imagem", e);
             return ResponseEntity.status(500).body("Erro interno ao processar imagem.");

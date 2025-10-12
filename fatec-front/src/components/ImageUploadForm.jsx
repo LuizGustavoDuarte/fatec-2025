@@ -35,7 +35,7 @@ function ImageUploadForm({
       const cid = `${Date.now()}-${Math.random().toString(36).slice(2,8)}`
       onFilesChange((prev) => [...prev, { cid, images: [base64] }])
 
-      const resp = await api.post(`/image/upload/1`, { imageBase64: base64 })
+      const resp = await api.post(`/image/upload`, { imageBase64: base64 })
       const id = resp?.data
       if (!id) {
         console.warn('ID não foi encontrado na resposta:', resp)

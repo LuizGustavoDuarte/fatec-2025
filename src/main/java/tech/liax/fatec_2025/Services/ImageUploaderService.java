@@ -9,15 +9,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import tech.liax.fatec_2025.DTOs.ImageProcessedDTO;
 import tech.liax.fatec_2025.Entities.ImageEntity;
 import tech.liax.fatec_2025.Entities.ProcessesImageEntity;
 import tech.liax.fatec_2025.Repositories.ImageRepository;
 import tech.liax.fatec_2025.Repositories.ProcessesImageRepository;
 import tech.liax.fatec_2025.Utils.ImageUtil;
-import tech.liax.fatec_2025.Utils.ProcessCodeEnum;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -61,7 +62,7 @@ public class ImageUploaderService {
     }
 
     @Transactional
-    public ImageEntity saveImageData() {
+    public ImageEntity saveNewImageData() {
         try {
             ImageEntity newImageEntity = imageRepository.save(new ImageEntity());
             newImageEntity.setImagePath(newImageEntity.getImageId().toString() + DEFAULT_IMAGE_EXTENSION);
@@ -100,17 +101,24 @@ public class ImageUploaderService {
     }
 
     @Transactional
-    public void saveProcessResult(ImageEntity originalImageEntity, BufferedImage processedImage, ProcessCodeEnum processCode) {
+    public void saveProcessResult(ImageEntity originalImageEntity, List<ImageProcessedDTO> processedImages) {
         try {
-            ImageEntity newImageEntity = saveImageData();
-            processesImageRepository.save(
-                    ProcessesImageEntity.builder()
-                            .mainImage(originalImageEntity)
-                            .processedImage(newImageEntity)
-                            .processCode(processCode)
-                            .build()
-            );
-            upload(processedImage, newImageEntity.getImagePath());
+            for(ImageProcessedDTO processedImageDTO : processedImages) {
+                if(processedImageDTO == null || processedImageDTO.processedImage() == null) {
+                    logger.warn("ProcessedImageDTO ou processedImage é nulo, pulando este item.");
+                    continue;
+                }
+
+                ImageEntity newImageEntity = saveNewImageData();
+                processesImageRepository.save(
+                        ProcessesImageEntity.builder()
+                                .mainImage(originalImageEntity)
+                                .processedImage(newImageEntity)
+                                .processCode(processedImageDTO.processCode())
+                                .build()
+                );
+                upload(processedImageDTO.processedImage(), newImageEntity.getImagePath());
+            }
         } catch (Exception e) {
             logger.error("Erro ao salvar resultado do processamento: {}", e.getMessage(), e);
             throw new RuntimeException("Falha ao salvar resultado do processamento", e);
